@@ -6,7 +6,6 @@ const { formatRoman } = require("../utils/formatRoman");
 router.get("/roma-sse", (req, res) => {
   const { number } = req.query;
   const num = parseInt(number);
-  console.log("num", num);
 
   // Set Header for SSE
   res.setHeader("Content-Type", "text/event-stream");
