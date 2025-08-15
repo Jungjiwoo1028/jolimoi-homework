@@ -2,14 +2,27 @@ const express = require("express");
 const router = express.Router();
 const { formatRoman } = require("../utils/formatRoman");
 
-// [POST] Convert number to Roman number (AJAX)
-router.post("/roma-ajax", (req, res) => {
+// [GET] Convert number to Roman number (SSE)
+router.get("/roma-sse", (req, res) => {
+  const { number } = req.query;
+  const num = parseInt(number);
+  console.log("num", num);
+
+  // Set Header for SSE
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
   try {
-    const result = formatRoman(req.body.number);
-    res.status(200).json({ result });
+    const result = formatRoman(num);
+    res.write(`data: ${JSON.stringify({ result })}\n\n`); // Send the Roman number
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.write(
+      `data: ${JSON.stringify({ error: "Internal server error" })}\n\n`
+    ); // Send the error
+  } finally {
+    res.end(); // Close the stream
   }
 });
 

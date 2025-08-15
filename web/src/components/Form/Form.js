@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import ResultDisplay from "../Display/ResultDisplay";
 
 function Form() {
@@ -12,14 +11,19 @@ function Form() {
     e.preventDefault();
 
     try {
-      // POST request to format Roma number
-      const result = await axios.post(
-        "http://localhost:8000/format/roma-ajax",
-        {
-          number: parseInt(number),
-        }
+      const num = parseInt(number);
+      // Create SSE connection
+      const source = new EventSource(
+        `http://localhost:8000/format/roma-sse?number=${num}`
       );
-      setRoman(result.data.result); // Set the result
+
+      // Listen for messages from server
+      source.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setRoman(data.result || data.error); // Set the result
+        source.close();
+      };
+
       setError(""); // Clear the error message
     } catch (error) {
       setError("Failed to change Roma Number"); // Set the error message
@@ -29,7 +33,7 @@ function Form() {
 
   return (
     <section>
-      <h1>Convert Roma Number (AJAX)</h1>
+      <h1>Convert Roma Number (SSE)</h1>
 
       <form onSubmit={handleSubmit}>
         <label>
